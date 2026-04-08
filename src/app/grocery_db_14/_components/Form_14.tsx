@@ -2,18 +2,25 @@
 
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { createGroceryItem } from '../../../actions/grocery_action_14';
 
-const Form_14 = ({ addItem }: { addItem: (item: string) => void }) => {
+const Form_14 = ({ onItemAdded }: { onItemAdded?: () => void }) => {
   const [newItemName, setNewItemName] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newItemName) {
       toast.error('please provide value');
       return;
     }
-    addItem(newItemName);
-    setNewItemName('');
+    try {
+      await createGroceryItem(newItemName);
+      setNewItemName('');
+      toast.success('item added to the list');
+      onItemAdded?.();
+    } catch (error) {
+      toast.error('failed to add item');
+    }
   };
 
   return (

@@ -1,3 +1,5 @@
+import DeleteButton_14 from './DeleteButton_14';
+
 interface SingleItem_14Props {
   item: { id: string; name: string; completed: boolean };
   removeItem: (id: string) => void;
@@ -20,13 +22,7 @@ const SingleItem_14 = ({ item, removeItem, editItem }: SingleItem_14Props) => {
       >
         {item.name}
       </p>
-      <button
-        className='btn remove-btn'
-        type='button'
-        onClick={() => removeItem(item.id)}
-      >
-        delete
-      </button>
+      <DeleteButton_14 removeItem={removeItem} id={item.id} />
     </div>
   );
 };

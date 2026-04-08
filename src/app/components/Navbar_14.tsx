@@ -10,6 +10,7 @@ const Navbar_14 = () => {
             <Link href="/supabase_14">Supabase_14</Link>
             <Link href="/user_db_14">User DB_14</Link>
              <Link href="/grocery_14">Grocery_14</Link>
+             <Link href="/grocery_db_14">Grocery DB_14</Link>
         </nav>
     )
 }
