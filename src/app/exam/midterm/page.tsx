@@ -1,13 +1,13 @@
+export const dynamic = 'force-dynamic';
+
 import Wrapper from './_assets/wrappers/Shop_14';
 import Link from 'next/link';
 
 import { prisma } from '@/lib/prisma';
 
 async function getCategories() {
-  const categories = await prisma.category_14.findMany({
-    take: 5,
-  });
-  return categories;
+  if (!prisma) return [];
+  return prisma.category_14.findMany({ take: 5 });
 }
 
 const MidPage_14 = async () => {

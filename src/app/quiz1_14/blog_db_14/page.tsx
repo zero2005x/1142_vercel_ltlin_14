@@ -1,14 +1,13 @@
+export const dynamic = 'force-dynamic';
+
 import Wrapper from '../_assets/wrapper/Blog2_14';
 import { fetchBlog_14 } from '@/actions/blog.action_14';
 import Blog2_14 from '../_components/Blog2_14';
 import DeleteAllBlogs_14 from '../_components/DeleteAllBlogs_14';
 import SeedAllBlogs_14 from '../_components/SeedBlogs_14';
-import { deleteBlog_14 } from '@/actions/blog.action_14';
 
 const P1_14 = async () => {
   const blogs_14 = await fetchBlog_14();
-  const blogs_14_temp = blogs_14;
-  console.log('blogs_14:', blogs_14);
   return (
     <Wrapper>
       <section className='blogs'>

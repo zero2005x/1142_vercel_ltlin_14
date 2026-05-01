@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function Quiz1_14() {
   return (
     <div>

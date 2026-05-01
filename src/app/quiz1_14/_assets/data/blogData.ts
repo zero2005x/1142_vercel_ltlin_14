@@ -1,4 +1,4 @@
-export const blogData_xx = [
+export const blogData_14 = [
   {
     id: 1,
     title: 'Seven Reasons Why Coffee Is Awesome',

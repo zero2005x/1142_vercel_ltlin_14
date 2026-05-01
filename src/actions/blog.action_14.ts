@@ -4,20 +4,24 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 const BLOG_DATA = [
-  { title: 'Seven Reasons Why Coffee Is Awesome', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-1.jpg' },
-  { title: 'Travel To Paris', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-2.jpg' },
-  { title: 'Coffee Brings Friendship', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-3.jpg' },
-  { title: 'Coffee Make You Feel Good', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-4.jpg' },
-  { title: 'Coffee Make You Calm', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-5.jpg' },
-  { title: '101 Tower In Taipei', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-6.jpg' },
-  { title: 'Sun Rise From The Mountain', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-7.jpg' },
-  { title: 'Serene Lake With Trees', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-8.jpg' },
-  { title: 'Rocks Of Queen Head In Yehliu Taiwan', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://erogcveccbzsyhbgputf.supabase.co/storage/v1/object/public/demo-xx/card-xx/photo-9.jpg' },
+  { title: 'Seven Reasons Why Coffee Is Awesome', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://picsum.photos/seed/blog1/400/300' },
+  { title: 'Travel To Paris', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://picsum.photos/seed/blog2/400/300' },
+  { title: 'Coffee Brings Friendship', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://picsum.photos/seed/blog3/400/300' },
+  { title: 'Coffee Make You Feel Good', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://picsum.photos/seed/blog4/400/300' },
+  { title: 'Coffee Make You Calm', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'lifestyle', img: 'https://picsum.photos/seed/blog5/400/300' },
+  { title: '101 Tower In Taipei', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://picsum.photos/seed/blog6/400/300' },
+  { title: 'Sun Rise From The Mountain', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://picsum.photos/seed/blog7/400/300' },
+  { title: 'Serene Lake With Trees', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://picsum.photos/seed/blog8/400/300' },
+  { title: 'Rocks Of Queen Head In Yehliu Taiwan', descrip: 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', category: 'travel', img: 'https://picsum.photos/seed/blog9/400/300' },
 ];
 
 export const fetchBlog_14 = async () => {
-  if (!prisma) throw new Error('Prisma client is not initialized');
-  return prisma.blog_14.findMany();
+  if (!prisma) return [];
+  try {
+    return await prisma.blog_14.findMany();
+  } catch {
+    return [];
+  }
 };
 
 export const deleteBlog_14 = async (id: number) => {

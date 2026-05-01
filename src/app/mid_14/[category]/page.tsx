@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Wrapper from '../_assets/wrappers/Shop_14';
 import DeleteProduct_14 from '../_components/DeleteProduct_14';
 
@@ -13,20 +15,12 @@ type Product = {
 };
 
 async function getProductsByCategory(category: string) {
+  if (!prisma) return [];
   const categoryData = await prisma.category_14.findFirst({
     where: { cname: category },
   });
-
-  if (!categoryData) {
-    return [];
-  }
-
-  const products = await prisma.shop_14.findMany({
-    where: { cat_id: categoryData.cid },
-  });
-
-  console.log(`Products by category ${category}:`, products);
-  return products;
+  if (!categoryData) return [];
+  return prisma.shop_14.findMany({ where: { cat_id: categoryData.cid } });
 }
 
 const FetchProductsByCategory_14 = async ({
@@ -35,7 +29,6 @@ const FetchProductsByCategory_14 = async ({
   params: Promise<{ category: string }>;
 }) => {
   const { category } = await params;
-  console.log('category param:', category);
   const products = await getProductsByCategory(category);
 
   return (

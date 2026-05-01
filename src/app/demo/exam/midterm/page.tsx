@@ -28,7 +28,7 @@ const MidPage_14 = async () => {
                   src={category.remote_image_url || ''}
                   alt=''
                 />
-                <Link href={`/exam/midterm/${category.cname}`} className='content'>
+                <Link href={`/demo/exam/midterm/${category.cname}`} className='content'>
                   <h1 className='title'>{category.cname?.toUpperCase()}</h1>
                   <span className='subtitle'>SHOP NOW</span>
                 </Link>
