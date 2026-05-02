@@ -6,15 +6,12 @@ import { redirect } from "next/navigation";
 
 //fetchGroceryItems
 export const fetchGroceryItems = async () => {
-    if (!prisma) {
-        throw new Error("Prisma client is not initialized");
+    if (!prisma) return [];
+    try {
+        return await prisma.groceryItem.findMany({ orderBy: { name: 'asc' } });
+    } catch {
+        return [];
     }
-    const items = await prisma.groceryItem.findMany({
-        orderBy: {
-            name: 'asc',
-        }
-    });
-    return items;
 }
 
 // createGroceryItem
