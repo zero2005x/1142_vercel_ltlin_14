@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 export async function seedMidtermData() {
   if (!prisma) throw new Error('Prisma client is not initialized');
   const existingCategories = await prisma.category_14.findMany();
+  if (existingCategories.length > 0) {
     // console.log('Data already seeded');
     return { message: 'Data already seeded' };
   }

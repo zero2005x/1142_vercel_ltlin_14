@@ -13,6 +13,7 @@ type Product = {
 };
 
 async function getProductsByCategory(category: string) {
+  if (!prisma) return [];
   const categoryData = await prisma.category_14.findFirst({
     where: { cname: category },
   });

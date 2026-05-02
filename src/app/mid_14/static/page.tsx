@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
 async function getCategories() {
+  if (!prisma) return [];
   const categories = await prisma.category_14.findMany({
     take: 5,
   });

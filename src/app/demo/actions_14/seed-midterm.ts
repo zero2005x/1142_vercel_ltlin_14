@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 
 async function seedCategory() {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const categories = [
     { cid: 1, cname: 'hats', size: null, image_url: '/images/midterm/homepage/hats.png', remote_image_url: 'https://i.ibb.co/cvpntL1/hats.png', link_url: '/mid_14/hats' },
     { cid: 2, cname: 'jackets', size: null, image_url: '/images/midterm/homepage/jackets.png', remote_image_url: 'https://i.ibb.co/px2tCc3/jackets.png', link_url: '/mid_14/jackets' },
@@ -20,6 +21,7 @@ async function seedCategory() {
 }
 
 async function seedShop() {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const shopItems = [
     { pid: 1, pname: 'Brown Brim', cat_id: 1, price: 25, img_url: '/images/midterm/hats/brown-brim.png', remote_img_url: 'https://i.ibb.co/ZYW3VTp/brown-brim.png' },
     { pid: 2, pname: 'Blue Beanie', cat_id: 1, price: 18, img_url: '/images/midterm/hats/blue-beanie.png', remote_img_url: 'https://i.ibb.co/ypkgK0X/blue-beanie.png' },

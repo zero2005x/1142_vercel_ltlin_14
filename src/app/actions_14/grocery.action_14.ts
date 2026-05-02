@@ -16,6 +16,7 @@ export const createGrocery = async (formDate: FormData) => {
   const id = nanoid();
   const newGrocery = { id, name, completed };
   console.log('newGrocery', newGrocery);
+  if (!prisma) throw new Error('Prisma client is not initialized');
   try {
     const result = await prisma.groceryItem.create({
       data: newGrocery,
@@ -33,6 +34,7 @@ export const removeGrocery = async (id: string, formData: FormData) => {
 };
 
 export const editGrocery = async (id: string, completed: boolean) => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   try {
     const updatedGrocery = await prisma.groceryItem.update({
       where: { id },
