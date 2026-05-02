@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Wrapper from './_assets/wrappers/Shop_14';
 import Link from 'next/link';
 
