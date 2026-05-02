@@ -1,5 +1,4 @@
 import Wrapper from '../_assets/wrappers/Shop_14';
-// import { Link } from 'react-router-dom';
 import Link from 'next/link';
 
 const NavbarShopNode_14 = () => {
@@ -13,13 +12,13 @@ const NavbarShopNode_14 = () => {
           <Link href='/' className='option'>
             TKUdemo
           </Link>
-          <Link href='./overview.html' className='option'>
+          <Link href='/mid_14' className='option'>
             Shop
           </Link>
-          <Link href='/shop' className='option'>
+          <Link href='/mid_14' className='option'>
             Contact
           </Link>
-          <Link href='/signin' className='option'>
+          <Link href='/mid_14' className='option'>
             Sign In
           </Link>
           <div className='cart-icon'>
@@ -32,7 +31,7 @@ const NavbarShopNode_14 = () => {
           <div className='cart-dropdown'>
             <div className='cart-items'>
               <div className='cart-item'>
-                <img src='/images/midterm/hats/brown-cowboy.png' alt='item' />
+                <img src='https://i.ibb.co/QdJwgmp/brown-cowboy.png' alt='item' />
                 <div className='item-details'>
                   <span className='name'>Brown Cowboy</span>
                   <span className='price'>4 * $35</span>
@@ -40,7 +39,7 @@ const NavbarShopNode_14 = () => {
               </div>
               <div className='cart-item'>
                 <img
-                  src='/images/midterm/jackets/blue-jean-jacket.png'
+                  src='https://i.ibb.co/mJS6vz0/blue-jean-jacket.png'
                   alt='item'
                 />
                 <div className='item-details'>
