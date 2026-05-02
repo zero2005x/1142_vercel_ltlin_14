@@ -1,16 +1,6 @@
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
-  :root {
-    /* w5 -- blogs css */
-    --primary: #645cff;
-    --primary-dark: #3c3799;
-    --grey: #64748b;
-    --grey-light: #f1f5f9;
-    --grey-dark: #0f172a;
-    --border-radius: 0.2rem;
-  }
-
   .img {
     width: 100%;
     height: 15rem;
@@ -23,8 +13,8 @@ const Wrapper = styled.div`
       Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
       sans-serif;
     font-size: 10px;
-    color: var(--grey-dark);
-    background-color: var(--grey-light);
+    color: #0f172a;
+    background-color: #f1f5f9;
     padding: 3rem 1.5rem;
   }
 
