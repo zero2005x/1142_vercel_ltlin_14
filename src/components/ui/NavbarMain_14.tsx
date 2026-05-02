@@ -32,9 +32,6 @@ const NavbarMain_14 = () => {
               <MenubarItem asChild>
                 <Link href='/tours_14'>Tours</Link>
               </MenubarItem>
-              <MenubarItem asChild>
-                <Link href='/actions_14'>Actions</Link>
-              </MenubarItem>
             </MenubarGroup>
             <MenubarSeparator />
             <MenubarGroup>
@@ -57,12 +54,6 @@ const NavbarMain_14 = () => {
               </MenubarItem>
             </MenubarGroup>
             <MenubarSeparator />
-            <MenubarGroup>
-              <MenubarLabel>Seed</MenubarLabel>
-              <MenubarItem asChild>
-                <Link href='/seed_14'>Seed DB</Link>
-              </MenubarItem>
-            </MenubarGroup>
           </MenubarContent>
         </MenubarMenu>
 
