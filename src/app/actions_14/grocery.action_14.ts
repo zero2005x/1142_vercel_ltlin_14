@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { nanoid } from 'nanoid';
 
 export const fetchGrocery = async () => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const users = await prisma.groceryItem.findMany();
   return users;
 };
@@ -26,6 +27,7 @@ export const createGrocery = async (formDate: FormData) => {
 };
 
 export const removeGrocery = async (id: string, formData: FormData) => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   await prisma.groceryItem.delete({ where: { id } });
   revalidatePath('/grocery_db_14');
 };

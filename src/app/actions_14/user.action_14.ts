@@ -12,6 +12,7 @@ export type UserInfo = {
 export type User = UserInfo & { id: number };
 
 export const fetchUsers = async () => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const users = await prisma.user.findMany();
   return users;
 };
@@ -24,6 +25,7 @@ export const createUser = async (prevState: any, formData: FormData) => {
   console.log('newUser', newUser);
 
   try {
+    if (!prisma) return 'failed to create user...';
     const result = await prisma.user.create({ data: newUser });
     revalidatePath('/users_db_14');
 
@@ -36,6 +38,7 @@ export const createUser = async (prevState: any, formData: FormData) => {
 };
 
 export const removeUser = async (id: number, formData: FormData) => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   await prisma.user.delete({ where: { id } });
   revalidatePath('/users_db_14');
 };

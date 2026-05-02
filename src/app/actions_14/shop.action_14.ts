@@ -4,8 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function seedMidtermData() {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const existingCategories = await prisma.category_14.findMany();
-  if (existingCategories.length > 0) {
     // console.log('Data already seeded');
     return { message: 'Data already seeded' };
   }
@@ -349,6 +349,7 @@ export async function seedMidtermData() {
 }
 
 export const deleteProduct_14 = async (formData: FormData) => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const id = formData.get('id');
   const productId = Number(id);
 
@@ -362,6 +363,7 @@ export const deleteProduct_14 = async (formData: FormData) => {
 };
 
 export async function deleteProductById_14(productId: number) {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   console.log('Deleting product with id:', productId);
 
   await prisma.shop_14.delete({
