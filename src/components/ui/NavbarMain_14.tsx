@@ -10,6 +10,8 @@ import {
   MenubarTrigger,
 } from '@/components/ui/menubar';
 import { ModeToggle } from '@/components/mode-toggle';
+import { Button } from './button';
+import { Store } from 'lucide-react';
 
 const NavbarMain_14 = () => {
   return (
@@ -126,6 +128,12 @@ const NavbarMain_14 = () => {
         </MenubarMenu>
 
       </Menubar>
+
+      <div className='flex items=center gap-4'>
+        <Link href='/store_14'>
+        <Button variant='outline'><Store></Store></Button></Link>
+      </div>
+
 
       <ModeToggle />
     </div>
