@@ -3,16 +3,24 @@
 import { FaGlobe } from 'react-icons/fa6';
 import { FaMugSaucer } from 'react-icons/fa6';
 import Link from 'next/link';
-import { deleteBlog_14 } from '@/actions/blog.action_14';
 
-type Blog = {
+type Blog2Props = {
   id: number;
   img: string;
   category: string;
   title: string;
   descrip: string;
+  removeItem?: (id: number) => void;
 };
-const Blog2_14 = ({ id, img, category, title, descrip }: Blog) => {
+
+const Blog2_14 = ({
+  id,
+  img,
+  category,
+  title,
+  descrip,
+  removeItem,
+}: Blog2Props) => {
   return (
     <article key={id} className='blog'>
       <img src={img} alt='Coffee photo' className='img blog-img' />
@@ -32,7 +40,7 @@ const Blog2_14 = ({ id, img, category, title, descrip }: Blog) => {
           <button
             type='button'
             className='text-red-700 bg-red-100 capitalize px-2 py-1 hover:bg-red-300 rounded'
-            onClick={() => deleteBlog_14(id)}
+            onClick={() => removeItem?.(id)}
           >
             delete
           </button>

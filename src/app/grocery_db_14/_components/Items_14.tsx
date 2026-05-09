@@ -1,25 +1,15 @@
 import SingleItem from './SingleItem_14';
-import { fetchGroceryItems } from '../../../actions/grocery_action_14';
 
 interface ItemsProps {
   items: { id: string; name: string; completed: boolean }[];
-  removeItem: (id: string) => void;
-  editItem: (id: string) => void;
 }
 
-const Items = ({ items, removeItem, editItem }: ItemsProps) => {
+const Items = ({ items }: ItemsProps) => {
   return (
     <div className='items'>
-      {items.map((item) => {
-        return (
-          <SingleItem
-            key={item.id}
-            item={item}
-            removeItem={removeItem}
-            editItem={editItem}
-          />
-        );
-      })}
+      {items.map((item) => (
+        <SingleItem key={item.id} item={item} />
+      ))}
     </div>
   );
 };

@@ -40,4 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma local database files
+dev.db
+dev.db-journal
+
 **/generated/prisma
+
+# clerk configuration (can include secrets)
+/.clerk/

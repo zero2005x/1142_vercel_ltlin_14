@@ -1,38 +1,11 @@
-'use client';
+import { addGroceryItem } from '../../../actions/grocery_action_14';
 
-import { useState } from 'react';
-import { toast } from 'react-toastify';
-import { createGroceryItem } from '../../../actions/grocery_action_14';
-
-const Form_14 = ({ onItemAdded }: { onItemAdded?: () => void }) => {
-  const [newItemName, setNewItemName] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!newItemName) {
-      toast.error('please provide value');
-      return;
-    }
-    try {
-      await createGroceryItem(newItemName);
-      setNewItemName('');
-      toast.success('item added to the list');
-      onItemAdded?.();
-    } catch (error) {
-      toast.error('failed to add item');
-    }
-  };
-
+const Form_14 = () => {
   return (
-    <form onSubmit={handleSubmit}>
+    <form action={addGroceryItem}>
       <h4>grocery bud</h4>
       <div className='form-control'>
-        <input
-          type='text '
-          className='form-input'
-          value={newItemName}
-          onChange={(event) => setNewItemName(event.target.value)}
-        />
+        <input type='text' name='name' className='form-input' />
         <button type='submit' className='btn'>
           add item
         </button>

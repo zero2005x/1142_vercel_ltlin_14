@@ -12,6 +12,7 @@ import {
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from './button';
 import { Store } from 'lucide-react';
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 
 const NavbarMain_14 = () => {
   return (
@@ -136,6 +137,20 @@ const NavbarMain_14 = () => {
 
 
       <ModeToggle />
+
+      <div className='flex items-center gap-2'>
+        <Show when='signed-out'>
+          <SignInButton />
+          <SignUpButton>
+            <button className='bg-[#6c47ff] text-white rounded-full font-medium text-sm h-9 px-4 cursor-pointer'>
+              Sign Up
+            </button>
+          </SignUpButton>
+        </Show>
+        <Show when='signed-in'>
+          <UserButton />
+        </Show>
+      </div>
     </div>
   );
 };

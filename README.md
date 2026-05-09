@@ -83,7 +83,7 @@ model Post {
 }
 
 model GroceryItem {
-  id        String  @id
+  id        String  @id @default(uuid())
   name      String
   completed Boolean @default(false)
 }
@@ -115,13 +115,21 @@ model blog_14 {
   title    String?
   descrip  String?
 }
+
+model blog_xx {
+  id       Int     @id @default(autoincrement())
+  img      String?
+  category String?
+  title    String?
+  descrip  String?
+}
 ```
 
 ---
 
 ## 環境變數
 
-建立 `.env` 檔（參考 `.env.example`）：
+建立 `.env` 檔：
 
 ```env
 # PostgreSQL / Supabase 連線字串
@@ -193,7 +201,7 @@ src/
 ├── components/           # 共用 React Components
 └── lib/
     ├── prisma.ts         # Prisma Client (singleton)
-    └── supabase.ts       # Supabase Client
+  └── supabase/         # Supabase server utilities
 prisma/
 └── schema.prisma         # DB Schema
 public/

@@ -59,4 +59,24 @@ export const toggleGroceryItem = async (id: string, completed: boolean) => {
     });
     revalidatePath("/grocery_db_14");
 }
+
+// W11: FormData-based server actions for RSC form pattern
+export const addGroceryItem = async (formData: FormData) => {
+    const name = (formData.get('name') as string)?.trim();
+    if (!name) return;
+    if (!prisma) return;
+    try {
+        await prisma.groceryItem.create({ data: { name, completed: false } });
+    } catch (error) {
+        console.error('Error creating grocery item:', error);
+        throw error;
+    }
+    revalidatePath('/grocery_db_14');
+};
+
+export const removeGroceryItem = async (id: string, formData: FormData) => {
+    if (!prisma) return;
+    await prisma.groceryItem.delete({ where: { id } });
+    revalidatePath('/grocery_db_14');
+};
     
