@@ -4,11 +4,16 @@ import Wrapper from './_assets/wrappers/Shop_14';
 import Link from 'next/link';
 
 import { prisma } from '@/lib/prisma';
+import { midtermCategories } from './_assets/midterm-data';
 
 async function getCategories() {
-  if (!prisma) return [];
-  const categories = await prisma.category_14.findMany({ take: 5 });
-  return categories;
+  if (!prisma) return midtermCategories;
+  try {
+    const categories = await prisma.category_14.findMany({ take: 5 });
+    return categories.length > 0 ? categories : midtermCategories;
+  } catch {
+    return midtermCategories;
+  }
 }
 
 const MidPage_14 = async () => {

@@ -4,6 +4,7 @@ import Wrapper from '../_assets/wrappers/Shop_14';
 import DeleteProduct_14 from '../_components/DeleteProduct_14';
 
 import { prisma } from '@/lib/prisma';
+import { getFallbackProductsByCategory } from '../_assets/midterm-data';
 
 type Product = {
   pid: number;
@@ -15,12 +16,17 @@ type Product = {
 };
 
 async function getProductsByCategory(category: string) {
-  if (!prisma) return [];
-  const categoryData = await prisma.category_14.findFirst({
-    where: { cname: category },
-  });
-  if (!categoryData) return [];
-  return prisma.shop_14.findMany({ where: { cat_id: categoryData.cid } });
+  if (!prisma) return getFallbackProductsByCategory(category);
+  try {
+    const categoryData = await prisma.category_14.findFirst({
+      where: { cname: category },
+    });
+    if (!categoryData) return getFallbackProductsByCategory(category);
+    const products = await prisma.shop_14.findMany({ where: { cat_id: categoryData.cid } });
+    return products.length > 0 ? products : getFallbackProductsByCategory(category);
+  } catch {
+    return getFallbackProductsByCategory(category);
+  }
 }
 
 const FetchProductsByCategory_14 = async ({
