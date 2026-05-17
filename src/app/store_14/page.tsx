@@ -1,8 +1,12 @@
+import FeaturedProducts_14 from './_components/home/FeaturedProducts_14';
+import Hero_14 from './_components/home/Hero_14';
+
 const StorePage_14 = () => {
   return (
-    <div className="p-4">
-      <h1>Store</h1>
-    </div>
+    <>
+      <Hero_14 />
+      <FeaturedProducts_14 />
+    </>
   );
 };
 

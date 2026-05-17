@@ -25,8 +25,14 @@ async function getProductsByCategory(category: string): Promise<ProductRecord[]>
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
+
     if (res.ok) {
-      const data = (await res.json()) as Array<{
+      const text = await res.text();
+      if (!text.trim()) {
+        return [];
+      }
+
+      const data = JSON.parse(text) as Array<{
         pid?: number;
         id?: number;
         pname?: string | null;
@@ -35,8 +41,8 @@ async function getProductsByCategory(category: string): Promise<ProductRecord[]>
         remote_img_url?: string | null;
         img_url?: string | null;
       }>;
+
       if (Array.isArray(data) && data.length > 0) {
-        // Normalize Node API shape -> { pid, pname, price, remote_img_url }
         return data
           .map((item) => ({
             pid: item.pid ?? item.id,

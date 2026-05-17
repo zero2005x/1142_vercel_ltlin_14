@@ -1,0 +1,38 @@
+export const products = [
+  {
+    name: 'Modern Chair',
+    company: 'ikea',
+    description: 'A comfortable chair for reading, coding, and daily study.',
+    featured: true,
+    image: '/store/product-1.jpg',
+    price: 2599,
+    clerkId: 'seed',
+  },
+  {
+    name: 'Wooden Desk',
+    company: 'muji',
+    description: 'A clean wooden desk with enough space for a laptop setup.',
+    featured: true,
+    image: '/store/product-2.jpg',
+    price: 4999,
+    clerkId: 'seed',
+  },
+  {
+    name: 'Desk Lamp',
+    company: 'benq',
+    description: 'A compact lamp for late-night notes and project work.',
+    featured: false,
+    image: '/store/product-3.jpg',
+    price: 1299,
+    clerkId: 'seed',
+  },
+  {
+    name: 'Storage Box',
+    company: 'ikea',
+    description: 'Simple storage for cables, stationery, and small tools.',
+    featured: false,
+    image: '/store/product-4.jpg',
+    price: 399,
+    clerkId: 'seed',
+  },
+];
