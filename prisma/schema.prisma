@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -12,8 +9,8 @@ datasource db {
 
 model User {
   id    Int     @id @default(autoincrement())
-  name  String?
   email String  @unique
+  name  String?
   posts Post[]
 }
 
@@ -22,50 +19,47 @@ model Post {
   title     String
   content   String?
   published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  authorId  Int
+  author    User    @relation(fields: [authorId], references: [id])
 }
 
 model GroceryItem {
-  id        String  @id @default(uuid())
+  id        String  @id @default(cuid())
   name      String
   completed Boolean @default(false)
 }
 
-model category_14 {
-  cid              Int       @id
-  cname            String?
-  size             String?
+model Blog_14 {
+  id         Int     @id
+  title      String? @db.VarChar(255)
+  descrip    String?
+  category   String? @db.VarChar(255)
+  img        String?
+  remote_img String?
+
+  @@map("blog_14")
+}
+
+model Category_14 {
+  cid              Int     @id
+  cname            String? @db.VarChar(255)
+  size             String? @db.VarChar(255)
   image_url        String?
   remote_image_url String?
   link_url         String?
-  shop             shop_14[]
+
+  @@map("category_14")
 }
 
-model shop_14 {
-  pid            Int          @id
-  pname          String?
+model Shop_14 {
+  pid            Int     @id
+  pname          String? @db.VarChar(255)
   cat_id         Int?
-  price          Int?
+  price          Float?  @db.Real
   img_url        String?
   remote_img_url String?
-  category       category_14? @relation(fields: [cat_id], references: [cid])
-}
 
-model blog_14 {
-  id       Int     @id @default(autoincrement())
-  img      String?
-  category String?
-  title    String?
-  descrip  String?
-}
-
-model blog_xx {
-  id       Int     @id @default(autoincrement())
-  img      String?
-  category String?
-  title    String?
-  descrip  String?
+  @@map("shop_14")
 }
 
 model Product {
@@ -79,4 +73,67 @@ model Product {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   clerkId     String
+  favorites   Favorite[]
+  reviews     Review[]
+  cartItems   CartItem[]
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  clerkId   String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  clerkId        String
+  rating         Int
+  comment        String
+  authorName     String
+  authorImageUrl String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String
+}
+
+model Cart {
+  id             String     @id @default(uuid())
+  clerkId        String
+  cartItems      CartItem[]
+  numItemsInCart Int        @default(0)
+  cartTotal      Int        @default(0)
+  shipping       Int        @default(5)
+  tax            Int        @default(0)
+  taxRate        Float      @default(0.1)
+  orderTotal     Int        @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  amount    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String   @id @default(uuid())
+  clerkId    String
+  products   Int      @default(0)
+  orderTotal Int      @default(0)
+  tax        Int      @default(0)
+  shipping   Int      @default(0)
+  email      String
+  isPaid     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

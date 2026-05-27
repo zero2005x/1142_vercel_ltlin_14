@@ -1,17 +1,18 @@
-import Image from 'next/image';
+import Image from "next/image";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel';
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 
-const heroImages = [
-  '/store/hero1.jpg',
-  '/store/hero2.jpg',
-  '/store/hero3.jpg',
-  '/store/hero4.jpg',
+const carouselImages = [
+  "/store/hero1.jpg",
+  "/store/hero2.jpg",
+  "/store/hero3.jpg",
+  "/store/hero4.jpg",
 ];
 
 function HeroCarousel() {
@@ -19,18 +20,22 @@ function HeroCarousel() {
     <div className="hidden lg:block">
       <Carousel opts={{ loop: true }}>
         <CarouselContent>
-          {heroImages.map((image, index) => (
+          {carouselImages.map((image, index) => (
             <CarouselItem key={image}>
-              <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted">
-                <Image
-                  src={image}
-                  alt={`store hero ${index + 1}`}
-                  fill
-                  sizes="(min-width: 1024px) 480px, 100vw"
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </div>
+              <Card>
+                <CardContent>
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted">
+                    <Image
+                      src={image}
+                      alt={`store hero ${index + 1}`}
+                      fill
+                      sizes="(min-width: 1024px) 480px, 100vw"
+                      className="object-cover"
+                      priority={index === 0}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </CarouselItem>
           ))}
         </CarouselContent>

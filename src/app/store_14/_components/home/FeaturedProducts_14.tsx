@@ -5,7 +5,7 @@ import { fetchFeaturedProducts_14 } from '../../_utils/action';
 
 async function FeaturedProducts_14() {
   const products = await fetchFeaturedProducts_14();
-
+  console.log('Featured Products:', products);
   return (
     <section className='pt-24'>
       <SectionTitle text='featured products' />
