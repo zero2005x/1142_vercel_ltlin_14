@@ -6,7 +6,7 @@ import FavoriteToggleButton_14 from "./FavoriteToggleButton_14";
 import Link from "next/link";
 
 const ProductsGrid_14 = ({ products }: { products: Product[] }) => {
-  // 直接寫在組件主體內！它會在伺服器端渲染時，將資訊印在你的 VS Code / CMD 終端機中
+  
   console.log("--- ProductsGrid_14 (Server) Loaded ---");
   console.log("總商品數量:", products ? products.length : 0);
   console.log("第一筆商品範例:", products?.[0]);

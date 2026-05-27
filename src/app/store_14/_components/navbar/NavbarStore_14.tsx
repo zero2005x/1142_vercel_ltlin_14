@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import LogoStore_14 from "./LogoStore_14";
 import ModeToggle from "./ModeToggle";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,9 @@ const NavbarStore_14 = () => {
     <nav className="border-b bg-background">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-4">
         <LogoStore_14 />
-        <NavSearch_14 />
+        <Suspense fallback={null}>
+          <NavSearch_14 />
+        </Suspense>
         <div className="flex items-center gap-4">
           <Button asChild variant="secondary">
             <Link href="/store_14">TKUdemo</Link>

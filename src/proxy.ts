@@ -1,6 +1,28 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default clerkMiddleware();
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/store_14",
+  "/store_14/products_14(.*)",
+  "/store_14/about_14",
+]);
+
+const isAdminRoute = createRouteMatcher(["/store_14/admin_14(.*)"]);
+
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+  const isAdminUser = Boolean(userId) && userId === process.env.ADMIN_USER_ID;
+
+  // ① 非管理員進 admin 頁 → 踢回首頁
+  if (isAdminRoute(req) && !isAdminUser) {
+    return NextResponse.redirect(new URL("/store_14", req.url));
+  }
+  // ② 非公開路徑 → 強制登入
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [

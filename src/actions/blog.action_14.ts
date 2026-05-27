@@ -40,8 +40,8 @@ export const SeedBlog_14 = async () => {
   if (!prisma) throw new Error('Prisma client is not initialized');
   const existing = await prisma.blog_14.findMany();
   if (existing.length > 0) return { message: 'Already seeded' };
-  for (const blog of BLOG_DATA) {
-    await prisma.blog_14.create({ data: blog });
+  for (let i = 0; i < BLOG_DATA.length; i++) {
+    await prisma.blog_14.create({ data: { id: i + 1, ...BLOG_DATA[i] } });
   }
   revalidatePath('/quiz1_14/blog_db_14');
   return { message: 'Seeded successfully' };

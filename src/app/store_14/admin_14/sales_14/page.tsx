@@ -1,12 +1,48 @@
-import StorePlaceholderPage_14 from '../../_components/global/StorePlaceholderPage_14';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-const AdminSalesPage_14 = () => {
+import { formatCurrency, formatDate } from '../../_utils/format';
+import { fetchAdminOrders } from '../../_utils/action';
+
+async function SalesPage() {
+  const orders = await fetchAdminOrders();
   return (
-    <StorePlaceholderPage_14
-      title='admin sales'
-      description='Sales summaries will appear here after order and payment data are connected.'
-    />
+    <Table>
+      <TableCaption>Total Orders : {orders?.length ?? 0}</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Email</TableHead>
+          <TableHead>Products</TableHead>
+          <TableHead>Order Total</TableHead>
+          <TableHead>Tax</TableHead>
+          <TableHead>Shipping</TableHead>
+          <TableHead>Date</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {orders?.map((order) => {
+          const { products, orderTotal, tax, shipping, createdAt, email } =
+            order;
+          return (
+            <TableRow key={order.id}>
+              <TableCell>{email}</TableCell>
+              <TableCell>{products}</TableCell>
+              <TableCell>{formatCurrency(orderTotal)}</TableCell>
+              <TableCell>{formatCurrency(tax)}</TableCell>
+              <TableCell>{formatCurrency(shipping)}</TableCell>
+              <TableCell>{formatDate(createdAt)}</TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
-};
-
-export default AdminSalesPage_14;
+}
+export default SalesPage;
