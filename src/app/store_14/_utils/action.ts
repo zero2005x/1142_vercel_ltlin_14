@@ -146,3 +146,44 @@ export const deleteProductAction = async (
 		return renderError(error);
 	}
 };
+
+export const fetchAdminProductDetails = async (productId: string) => {
+	await getAdminUser();
+	if (!prisma) {
+		const found = fallbackProducts.find((p) => p.id === productId);
+		if (!found) redirect('/store_14/admin_14/products_14');
+		return found;
+	}
+	const product = await prisma.product.findUnique({
+		where: { id: productId },
+	});
+	if (!product) redirect('/store_14/admin_14/products_14');
+	return product;
+};
+
+export const updateProductAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	await getAdminUser();
+	const productId = formData.get('id') as string;
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		await prisma.product.update({
+			where: { id: productId },
+			data: {
+				name: formData.get('name') as string,
+				company: formData.get('company') as string,
+				description: formData.get('description') as string,
+				price: Number(formData.get('price')),
+				image: formData.get('image') as string,
+				featured: formData.get('featured') === 'on',
+			},
+		});
+		revalidatePath(`/store_14/admin_14/products_14/${productId}/edit`);
+		revalidatePath('/store_14/admin_14/products_14');
+		return { message: 'Product updated successfully' };
+	} catch (error) {
+		return renderError(error);
+	}
+};
