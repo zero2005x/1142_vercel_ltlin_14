@@ -38,7 +38,7 @@ async function EditProductPage({
             />
             <PriceInput defaultValue={price} />
             <FormInput
-              type='url'
+              type='text'
               name='image'
               label='image url'
               defaultValue={image}

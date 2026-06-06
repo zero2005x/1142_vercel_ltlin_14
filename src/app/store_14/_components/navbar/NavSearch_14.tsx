@@ -1,13 +1,15 @@
 "use client";
 
-import {useState, useEffect} from "react";
+import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 const NavSearch_14 = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("search") ?? ""
+  );
   const {replace} = useRouter();
   const handleSearch = useDebouncedCallback((value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -18,12 +20,6 @@ const NavSearch_14 = () => {
     }
     replace(`/store_14/products_14?${params.toString()}`);
   }, 500);
-
-  useEffect(() => {
-    handleSearch(searchTerm);
-  }, [searchTerm, handleSearch]);
-
-
 
   return (
     <Input

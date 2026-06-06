@@ -19,7 +19,9 @@ const NavbarStore_14 = () => {
           <Button asChild variant="secondary">
             <Link href="/store_14">TKUdemo</Link>
           </Button>
-          <CartButton_14 />
+          <Suspense fallback={null}>
+            <CartButton_14 />
+          </Suspense>
           <ModeToggle />
           
           <StoreSignInOutAuth_14 />
