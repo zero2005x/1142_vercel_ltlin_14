@@ -20,6 +20,7 @@ const renderError = (error: unknown): { message: string } => {
 };
 
 export const fetchFeaturedBlogs = async () => {
+  if (!prisma) return [];
   const blogs2 = await prisma.blog2_14.findMany({
     where: {
       featured: true,
@@ -29,6 +30,7 @@ export const fetchFeaturedBlogs = async () => {
 };
 
 export const fetchAllBlogs = async ({ search = '' }: { search: string }) => {
+  if (!prisma) return [];
   return prisma.blog2_14.findMany({
     where: {
       OR: [
@@ -40,17 +42,20 @@ export const fetchAllBlogs = async ({ search = '' }: { search: string }) => {
 };
 
 export const deleteBlog_14 = async (id: string) => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   await prisma.blog2_14.delete({ where: { id } });
   revalidatePath('/quiz2_14');
 };
 
 export const deleteAllBlog_14 = async () => {
+  if (!prisma) throw new Error('Prisma client is not initialized');
   await prisma.blog2_14.deleteMany();
   revalidatePath('/quiz2_14/admin_14/blogs_14');
 };
 
 export const SeedBlog_14 = async () => {
   // console.log('blogData2_14:', blogData2_14);
+  if (!prisma) throw new Error('Prisma client is not initialized');
   await prisma.blog2_14.createMany({
     data: blogData2_14,
     skipDuplicates: true,
@@ -60,6 +65,7 @@ export const SeedBlog_14 = async () => {
 
 export const fetchAdminBlogs = async () => {
   // await getAdminUser();
+  if (!prisma) return [];
   const blogs = await prisma.blog2_14.findMany();
   return blogs;
 };
@@ -68,6 +74,7 @@ export const deleteBlogAction = async (prevState: { blogId: string }) => {
   const { blogId } = prevState;
   // await getAdminUser();
   try {
+    if (!prisma) throw new Error('Prisma client is not initialized');
     const blog = await prisma.blog2_14.delete({
       where: {
         id: blogId,
@@ -96,6 +103,7 @@ export const createBlogAction = async (
     const descrip = formData.get('descrip') as string;
     const featured = Boolean(formData.get('featured') as string);
 
+    if (!prisma) throw new Error('Prisma client is not initialized');
     await prisma.blog2_14.create({
       data: {
         title,
@@ -123,6 +131,7 @@ export const createBlogAction2 = async (
     const rawData = Object.fromEntries(formData);
     const validatedFields = blogSchema.parse(rawData);
 
+    if (!prisma) throw new Error('Prisma client is not initialized');
     await prisma.blog2_14.create({
       data: {
         ...validatedFields,
@@ -137,6 +146,7 @@ export const createBlogAction2 = async (
 
 export const fetchAdminBlogDetails = async (blogId: string) => {
   // await getAdminUser();
+  if (!prisma) throw new Error('Prisma client is not initialized');
   const blog = await prisma.blog2_14.findUnique({
     where: {
       id: blogId,
@@ -155,6 +165,7 @@ export const updateBlogAction = async (prevState: any, formData: FormData) => {
     const validatedFields = validateWithZodSchema(blogSchema, cleanData);
     // const validatedFields = validateWithZodSchema(blogSchema, rawData);
 
+    if (!prisma) throw new Error('Prisma client is not initialized');
     await prisma.blog2_14.update({
       where: {
         id: blogId,
