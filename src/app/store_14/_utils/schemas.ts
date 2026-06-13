@@ -14,16 +14,69 @@ export const productSchema = z.object({
   price: z.coerce.number().int().min(0, {
     message: 'price must be a positive number.',
   }),
-  image: z.string().min(5, {
-    message: 'image must be at least 5 characters.',
-  }),
   description: z.string().refine(
     (description) => {
-      const wordCount = description.split(' ').length;
+      const wordCount = description.trim().split(/\s+/).length;
       return wordCount >= 10 && wordCount <= 1000;
     },
     {
       message: 'description must be between 10 and 1000 words.',
     }
   ),
+});
+
+export const imageSchema = z.object({
+  image: validateImageFile(),
+});
+
+function validateImageFile() {
+  const maxUploadSize = 1024 * 1024;
+  const acceptedFileTypes = ['image/'];
+  return z
+    .instanceof(File)
+    .refine((file) => file.size > 0, 'Image is required')
+    .refine((file) => file.size <= maxUploadSize, 'File size must be less than 1MB')
+    .refine(
+      (file) => acceptedFileTypes.some((type) => file.type.startsWith(type)),
+      'File must be an image'
+    );
+}
+
+export function validateWithZodSchema<T>(schema: ZodSchema<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    const errors = result.error.issues.map((error) => error.message);
+    throw new Error(errors.join(', '));
+  }
+  return result.data;
+}
+
+export const reviewSchema = z.object({
+  productId: z.string().min(1, {
+    message: 'Product ID cannot be empty',
+  }),
+  rating: z.coerce
+    .number()
+    .int()
+    .min(1, { message: 'Rating must be at least 1' })
+    .max(5, { message: 'Rating must be at most 5' }),
+  comment: z
+    .string()
+    .min(10, { message: 'Comment must be at least 10 characters long' })
+    .max(1000, { message: 'Comment must be at most 1000 characters long' }),
+});
+
+export const salesSchema = z.object({
+  email: z.string().email({
+    message: 'a valid email is required.',
+  }),
+  products: z.coerce.number().int().min(1, {
+    message: 'products must be at least 1.',
+  }),
+  orderTotal: z.coerce.number().int().min(0, {
+    message: 'order total must be a positive number.',
+  }),
+  tax: z.coerce.number().int().min(0).default(0),
+  shipping: z.coerce.number().int().min(0).default(0),
+  isPaid: z.coerce.boolean().default(false),
 });

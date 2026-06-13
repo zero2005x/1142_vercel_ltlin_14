@@ -1,11 +1,18 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import {revalidatePath} from "next/cache";
+import { revalidatePath } from 'next/cache';
 import { products as seedProducts } from '@/store/products';
 import { redirect } from 'next/navigation';
 import { currentUser, auth } from '@clerk/nextjs/server';
-import { productSchema } from './schemas';
+import {
+	imageSchema,
+	productSchema,
+	reviewSchema,
+	salesSchema,
+	validateWithZodSchema,
+} from './schemas';
+import { deleteImage, uploadImage } from './supabase';
 
 
 
@@ -19,6 +26,22 @@ export type Product = {
 	price: number;
 	clerkId: string;
 };
+
+type StoreAuthUser = {
+	id: string;
+	firstName: string | null;
+	username: string | null;
+	imageUrl: string;
+	emailAddresses: Array<{ emailAddress: string }>;
+};
+
+const createSessionUser = (userId: string): StoreAuthUser => ({
+	id: userId,
+	firstName: null,
+	username: null,
+	imageUrl: '',
+	emailAddresses: [],
+});
 
 const fallbackProducts: Product[] = seedProducts.map((product, index) => ({
 	id: `seed-${index + 1}`,
@@ -95,17 +118,39 @@ export async function fetchFeaturedProducts_14(): Promise<Product[]> {
 	}
 }
 
-const getAuthUser = async () => {
-  const user = await currentUser();
-  if (!user) redirect('/store_14');
-  return user;
+const getAuthUser = async (): Promise<StoreAuthUser> => {
+  const { userId } = await auth();
+  if (!userId) redirect('/store_14');
+
+  return createSessionUser(userId);
+};
+
+const getAuthUserProfile = async (): Promise<StoreAuthUser> => {
+  const sessionUser = await getAuthUser();
+
+  try {
+    const user = await currentUser();
+    if (user) {
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        username: user.username,
+        imageUrl: user.imageUrl,
+        emailAddresses: user.emailAddresses.map((email) => ({
+          emailAddress: email.emailAddress,
+        })),
+      };
+    }
+  } catch (error) {
+    console.warn('Clerk currentUser lookup failed; using session user id.', error);
+  }
+
+  return sessionUser;
 };
 
 const getAdminUser = async () => {
   const user = await getAuthUser();
   if (user.id !== process.env.ADMIN_USER_ID) redirect('/store_14');
-  console.log('Admin user authenticated:', user.emailAddresses[0]?.emailAddress);
-  console.log('Admin user ID:', user.id);
   return user;
 };
 
@@ -118,37 +163,6 @@ const renderError = (error: unknown): { message: string } => {
 
 
 
-export const createProductAction2 = async (
-  prevState: any,
-  formData: FormData
-): Promise<{ message: string }> => {
-  // 1. valaidate user authentication and authorization
-  const user = await getAuthUser();
-  try {
-    // 2. change FormData to a normal object for easier handling
-    const rawData = Object.fromEntries(formData);
-    // when using FormData, the checkbox value will be 'on' when checked and undefined when unchecked, we need to normalize it to a boolean value before validation
-    const normalizedData = {
-      ...rawData,
-      featured: formData.get('featured') === 'on',
-    };
-    // 3. to validate the data using zod schema, if the validation fails, it will throw an error which will be caught in the catch block and return the error message to the client
-    const validatedFields = productSchema.parse(normalizedData);
-    // 4. To create a new product in the database using Prisma, we also bind the created product with the Clerk User ID of the creator for future reference (e.g., to show which admin created which product)
-    await prisma?.product.create({
-      data: {
-        ...validatedFields,
-        clerkId: user.id, // bind the Clerk User ID of the creator
-      },
-    });
-    // 5. return a success message
-    return { message: 'product created' };
-  } catch (error) {
-    // 6. error handling
-    return renderError(error);
-  }
-};
-
 export const createProductAction = async (
 	_prevState: { message: string },
 	formData: FormData,
@@ -156,14 +170,20 @@ export const createProductAction = async (
 	const user = await getAdminUser();
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		const rawData = Object.fromEntries(formData);
+		const file = formData.get('image') as File;
+		const normalizedData = {
+			...rawData,
+			featured: formData.get('featured') === 'on',
+		};
+		const validatedFields = validateWithZodSchema(productSchema, normalizedData);
+		const validatedFile = validateWithZodSchema(imageSchema, { image: file });
+		const image = await uploadImage(validatedFile.image);
+
 		await prisma.product.create({
 			data: {
-				name: formData.get('name') as string,
-				company: formData.get('company') as string,
-				description: formData.get('description') as string,
-				price: Number(formData.get('price')),
-				image: formData.get('image') as string,
-				featured: formData.get('featured') === 'on',
+				...validatedFields,
+				image,
 				clerkId: user.id,
 			},
 		});
@@ -176,8 +196,9 @@ export const createProductAction = async (
 
 export const fetchAdminOrders = async () => {
 	await getAdminUser();
+	if (!prisma) return [];
 
-	const orders = await prisma?.order.findMany({
+	const orders = await prisma.order.findMany({
 		where: {
 			isPaid: true,
 		},
@@ -200,7 +221,8 @@ export const deleteProductAction = async (
 	const productId = formData.get('id') as string;
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
-		await prisma.product.delete({ where: { id: productId } });
+		const product = await prisma.product.delete({ where: { id: productId } });
+		await deleteImage(product.image);
 		revalidatePath('/store_14/admin_14/products_14');
 		return { message: 'Product deleted successfully' };
 	} catch (error) {
@@ -235,7 +257,7 @@ export const updateProductAction = async (
 			...rawData,
 			featured: formData.get('featured') === 'on',
 		};
-		const validatedFields = productSchema.parse(normalizedData);
+		const validatedFields = validateWithZodSchema(productSchema, normalizedData);
 		await prisma.product.update({
 			where: { id: productId },
 			data: validatedFields,
@@ -243,6 +265,33 @@ export const updateProductAction = async (
 		revalidatePath(`/store_14/admin_14/products_14/${productId}/edit`);
 		revalidatePath('/store_14/admin_14/products_14');
 		return { message: 'Product updated successfully' };
+	} catch (error) {
+		return renderError(error);
+	}
+};
+
+export const updateProductImageAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	await getAdminUser();
+	const productId = formData.get('id') as string;
+	const oldImageUrl = formData.get('url') as string;
+
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		const image = formData.get('image') as File;
+		const validatedFile = validateWithZodSchema(imageSchema, { image });
+		const fullPath = await uploadImage(validatedFile.image);
+
+		await prisma.product.update({
+			where: { id: productId },
+			data: { image: fullPath },
+		});
+		await deleteImage(oldImageUrl);
+		revalidatePath(`/store_14/admin_14/products_14/${productId}/edit`);
+		revalidatePath('/store_14/admin_14/products_14');
+		return { message: 'Product image updated successfully' };
 	} catch (error) {
 		return renderError(error);
 	}
@@ -344,9 +393,10 @@ const updateCart = async (cartId: string) => {
 	const shipping = cartTotal ? cart.shipping : 0;
 	const orderTotal = cartTotal + tax + shipping;
 
-	await prisma.cart.update({
+	return prisma.cart.update({
 		where: { id: cartId },
 		data: { numItemsInCart, cartTotal, tax, shipping, orderTotal },
+		include: includeProductClause,
 	});
 };
 
@@ -415,4 +465,273 @@ export const updateCartItemAction = async ({
 	} catch (error) {
 		return renderError(error);
 	}
+};
+
+// ---------------- FAVORITES ----------------
+
+// Returns the favorite id for a product if the signed-in user has favorited it.
+// Guests (or a missing db) get null so the button can show a sign-in prompt.
+export const fetchFavoriteId = async ({
+	productId,
+}: {
+	productId: string;
+}): Promise<string | null> => {
+	const { userId } = await auth();
+	if (!userId || !prisma) return null;
+	const favorite = await prisma.favorite.findFirst({
+		where: { productId, clerkId: userId },
+		select: { id: true },
+	});
+	return favorite?.id ?? null;
+};
+
+export const toggleFavoriteAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	const user = await getAuthUser();
+	const productId = formData.get('productId') as string;
+	const favoriteId = formData.get('favoriteId') as string;
+	const pathname = (formData.get('pathname') as string) || '/store_14/products_14';
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		if (favoriteId) {
+			await prisma.favorite.delete({ where: { id: favoriteId } });
+		} else {
+			await prisma.favorite.create({
+				data: { productId, clerkId: user.id },
+			});
+		}
+		revalidatePath(pathname);
+		return {
+			message: favoriteId ? 'removed from favorites' : 'added to favorites',
+		};
+	} catch (error) {
+		return renderError(error);
+	}
+};
+
+export const fetchUserFavorites = async () => {
+	const user = await getAuthUser();
+	if (!prisma) return [];
+	return prisma.favorite.findMany({
+		where: { clerkId: user.id },
+		include: { product: true },
+		orderBy: { createdAt: 'desc' },
+	});
+};
+
+// ---------------- REVIEWS ----------------
+
+export const createReviewAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	const user = await getAuthUserProfile();
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		const rawData = Object.fromEntries(formData);
+		const validatedFields = validateWithZodSchema(reviewSchema, rawData);
+		const authorName =
+			user.firstName ??
+			user.username ??
+			user.emailAddresses[0]?.emailAddress ??
+			'Store customer';
+		const authorImageUrl = user.imageUrl || '/window.svg';
+
+		const existingReview = await prisma.review.findFirst({
+			where: {
+				clerkId: user.id,
+				productId: validatedFields.productId,
+			},
+			select: { id: true },
+		});
+
+		if (existingReview) throw new Error('You already reviewed this product');
+
+		await prisma.review.create({
+			data: {
+				...validatedFields,
+				authorName,
+				authorImageUrl,
+				clerkId: user.id,
+			},
+		});
+		revalidatePath(`/store_14/products_14/${validatedFields.productId}`);
+		revalidatePath('/store_14/reviews_14');
+		return { message: 'Review submitted successfully' };
+	} catch (error) {
+		return renderError(error);
+	}
+};
+
+export const fetchProductReviews = async (productId: string) => {
+	if (!prisma) return [];
+	return prisma.review.findMany({
+		where: { productId },
+		orderBy: { createdAt: 'desc' },
+	});
+};
+
+export const fetchProductRating = async (productId: string) => {
+	if (!prisma) return { rating: '0.0', count: 0 };
+
+	const result = await prisma.review.groupBy({
+		by: ['productId'],
+		_avg: { rating: true },
+		_count: { rating: true },
+		where: { productId },
+	});
+
+	return {
+		rating: result[0]?._avg.rating?.toFixed(1) ?? '0.0',
+		count: result[0]?._count.rating ?? 0,
+	};
+};
+
+export const fetchProductReviewsByUser = async () => {
+	const user = await getAuthUser();
+	if (!prisma) return [];
+
+	return prisma.review.findMany({
+		where: { clerkId: user.id },
+		select: {
+			id: true,
+			rating: true,
+			comment: true,
+			product: {
+				select: {
+					id: true,
+					image: true,
+					name: true,
+				},
+			},
+		},
+		orderBy: { createdAt: 'desc' },
+	});
+};
+
+export const deleteReviewAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	const user = await getAuthUser();
+	const reviewId = formData.get('reviewId') as string;
+
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		const review = await prisma.review.findFirst({
+			where: {
+				id: reviewId,
+				clerkId: user.id,
+			},
+			select: { productId: true },
+		});
+
+		if (!review) throw new Error('Review not found');
+
+		await prisma.review.delete({ where: { id: reviewId } });
+		revalidatePath('/store_14/reviews_14');
+		revalidatePath(`/store_14/products_14/${review.productId}`);
+		return { message: 'Review deleted successfully' };
+	} catch (error) {
+		return renderError(error);
+	}
+};
+
+export const findExistingReview = async (userId: string, productId: string) => {
+	if (!prisma) return null;
+	return prisma.review.findFirst({
+		where: {
+			clerkId: userId,
+			productId,
+		},
+	});
+};
+
+// ---------------- SALES (ORDERS) ----------------
+
+export const createOrderAction = async (
+	_prevState: { message: string },
+	_formData: FormData,
+): Promise<{ message: string }> => {
+	const user = await getAuthUserProfile();
+	let orderId: string | null = null;
+	let cartId: string | null = null;
+
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		const cart = await fetchOrCreateCart({
+			userId: user.id,
+			errorOnFailure: true,
+		});
+		const currentCart = await updateCart(cart.id);
+		if (currentCart.numItemsInCart === 0) throw new Error('Cart is empty');
+
+		await prisma.order.deleteMany({
+			where: {
+				clerkId: user.id,
+				isPaid: false,
+			},
+		});
+
+		const order = await prisma.order.create({
+			data: {
+				clerkId: user.id,
+				products: currentCart.numItemsInCart,
+				orderTotal: currentCart.orderTotal,
+				tax: currentCart.tax,
+				shipping: currentCart.shipping,
+				email: user.emailAddresses[0]?.emailAddress ?? 'customer@example.com',
+			},
+		});
+
+		orderId = order.id;
+		cartId = currentCart.id;
+	} catch (error) {
+		return renderError(error);
+	}
+
+	redirect(`/store_14/checkout_14?orderId=${orderId}&cartId=${cartId}`);
+};
+
+export const fetchUserOrders = async () => {
+	const user = await getAuthUser();
+	if (!prisma) return [];
+
+	return prisma.order.findMany({
+		where: {
+			clerkId: user.id,
+			isPaid: true,
+		},
+		orderBy: {
+			createdAt: 'desc',
+		},
+	});
+};
+
+export const createSalesAction = async (
+	_prevState: { message: string },
+	formData: FormData,
+): Promise<{ message: string }> => {
+	const user = await getAdminUser();
+	try {
+		if (!prisma) throw new Error('Prisma client is not initialized');
+		const rawData = Object.fromEntries(formData);
+		const normalizedData = {
+			...rawData,
+			isPaid: formData.get('isPaid') === 'on',
+		};
+		const validatedFields = validateWithZodSchema(salesSchema, normalizedData);
+		await prisma.order.create({
+			data: {
+				...validatedFields,
+				clerkId: user.id,
+			},
+		});
+	} catch (error) {
+		return renderError(error);
+	}
+	revalidatePath('/store_14/admin_14/sales_14');
+	redirect('/store_14/admin_14/sales_14');
 };

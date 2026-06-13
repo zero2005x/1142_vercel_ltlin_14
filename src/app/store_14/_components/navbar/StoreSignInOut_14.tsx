@@ -29,9 +29,6 @@ type StoreSignInOutProps = {
 const StoreSignInOut_14 = ({ isAdminUser }: StoreSignInOutProps) => {
   const { isSignedIn } = useUser();
 
-  console.log("isSignedIn", isSignedIn);
-  console.log("isAdminUser", isAdminUser);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

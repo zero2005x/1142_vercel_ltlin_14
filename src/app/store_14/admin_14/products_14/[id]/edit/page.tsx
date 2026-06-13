@@ -1,5 +1,6 @@
 import {
   fetchAdminProductDetails,
+  updateProductImageAction,
   updateProductAction,
 } from '../../../../_utils/action';
 import FormContainer from '../../../../_components/form/FormContainer';
@@ -8,6 +9,7 @@ import PriceInput from '../../../../_components/form/PriceInput';
 import TextAreaInput from '../../../../_components/form/TextAreaInput';
 import CheckboxInput from '../../../../_components/form/CheckboxInput';
 import { SubmitButton } from '../../../../_components/form/Buttons';
+import ImageInputContainer from '../../../../_components/form/ImageInputContainer';
 
 async function EditProductPage({
   params,
@@ -22,6 +24,15 @@ async function EditProductPage({
     <section>
       <h1 className='text-2xl font-semibold mb-8 capitalize'>update product</h1>
       <div className='border p-8 rounded-md'>
+        <ImageInputContainer
+          action={updateProductImageAction}
+          image={image}
+          name={name}
+          text='update image'
+        >
+          <input type='hidden' name='id' value={id} />
+          <input type='hidden' name='url' value={image} />
+        </ImageInputContainer>
         <FormContainer action={updateProductAction}>
           <input type='hidden' name='id' value={id} />
           <div className='grid gap-4 md:grid-cols-2 my-4'>
@@ -37,12 +48,6 @@ async function EditProductPage({
               defaultValue={company}
             />
             <PriceInput defaultValue={price} />
-            <FormInput
-              type='text'
-              name='image'
-              label='image url'
-              defaultValue={image}
-            />
           </div>
           <TextAreaInput
             name='description'
