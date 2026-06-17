@@ -7,12 +7,15 @@ import { redirect } from 'next/navigation';
 import { currentUser, auth } from '@clerk/nextjs/server';
 import {
 	imageSchema,
+	productIdSchema,
 	productSchema,
 	reviewSchema,
 	salesSchema,
+	validateFormFields,
 	validateWithZodSchema,
 } from './schemas';
 import { deleteImage, uploadImage } from './supabase';
+import { assertValidImageContent } from './image-validation';
 
 
 
@@ -161,6 +164,12 @@ const renderError = (error: unknown): { message: string } => {
   };
 };
 
+const productFields = ['name', 'company', 'featured', 'price', 'description'];
+const createProductFields = [...productFields, 'image'];
+const updateProductFields = ['id', ...productFields];
+const updateProductImageFields = ['id', 'url', 'image'];
+const deleteProductFields = ['id'];
+
 
 
 export const createProductAction = async (
@@ -170,6 +179,7 @@ export const createProductAction = async (
 	const user = await getAdminUser();
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, createProductFields);
 		const rawData = Object.fromEntries(formData);
 		const file = formData.get('image') as File;
 		const normalizedData = {
@@ -178,6 +188,7 @@ export const createProductAction = async (
 		};
 		const validatedFields = validateWithZodSchema(productSchema, normalizedData);
 		const validatedFile = validateWithZodSchema(imageSchema, { image: file });
+		await assertValidImageContent(validatedFile.image);
 		const image = await uploadImage(validatedFile.image);
 
 		await prisma.product.create({
@@ -218,9 +229,12 @@ export const deleteProductAction = async (
 	formData: FormData,
 ): Promise<{ message: string }> => {
 	await getAdminUser();
-	const productId = formData.get('id') as string;
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, deleteProductFields);
+		const { id: productId } = validateWithZodSchema(productIdSchema, {
+			id: formData.get('id'),
+		});
 		const product = await prisma.product.delete({ where: { id: productId } });
 		await deleteImage(product.image);
 		revalidatePath('/store_14/admin_14/products_14');
@@ -249,9 +263,12 @@ export const updateProductAction = async (
 	formData: FormData,
 ): Promise<{ message: string }> => {
 	await getAdminUser();
-	const productId = formData.get('id') as string;
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, updateProductFields);
+		const { id: productId } = validateWithZodSchema(productIdSchema, {
+			id: formData.get('id'),
+		});
 		const rawData = Object.fromEntries(formData);
 		const normalizedData = {
 			...rawData,
@@ -275,20 +292,25 @@ export const updateProductImageAction = async (
 	formData: FormData,
 ): Promise<{ message: string }> => {
 	await getAdminUser();
-	const productId = formData.get('id') as string;
-	const oldImageUrl = formData.get('url') as string;
 
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, updateProductImageFields);
+		const { id: productId } = validateWithZodSchema(productIdSchema, {
+			id: formData.get('id'),
+		});
+		const product = await prisma.product.findUnique({ where: { id: productId } });
+		if (!product) throw new Error('Product not found');
 		const image = formData.get('image') as File;
 		const validatedFile = validateWithZodSchema(imageSchema, { image });
+		await assertValidImageContent(validatedFile.image);
 		const fullPath = await uploadImage(validatedFile.image);
 
 		await prisma.product.update({
 			where: { id: productId },
 			data: { image: fullPath },
 		});
-		await deleteImage(oldImageUrl);
+		await deleteImage(product.image);
 		revalidatePath(`/store_14/admin_14/products_14/${productId}/edit`);
 		revalidatePath('/store_14/admin_14/products_14');
 		return { message: 'Product image updated successfully' };
