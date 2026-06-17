@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import NavbarMain_14 from "./NavbarMain_14";
 
-const STANDALONE_PREFIXES = ["/store_14", "/quiz2_14"];
+const STANDALONE_PREFIXES = ["/store_14", "/quiz2_14", "/final_14"];
 
 export function ConditionalNavbar_14() {
   const pathname = usePathname();

@@ -76,6 +76,28 @@ model Shop_14 {
   @@map("shop_14")
 }
 
+model Category2_14 {
+  cid              Int     @id
+  cname            String? @db.VarChar(255)
+  size             String? @db.VarChar(255)
+  image_url        String?
+  remote_image_url String?
+  link_url         String?
+
+  @@map("Category2_14")
+}
+
+model Shop2_14 {
+  pid            String  @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(255)
+  pname          String? @db.VarChar(255)
+  cat_id         Int?
+  price          Float?  @db.Real
+  img_url        String?
+  remote_img_url String?
+
+  @@map("Shop2_14")
+}
+
 model Product {
   id          String     @id @default(uuid())
   name        String
