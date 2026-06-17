@@ -14,6 +14,7 @@ const ContentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.course-api.com https://images.pexels.com https://img.clerk.com https://i.imgur.com https://picsum.photos https://loremflickr.com https://*.supabase.co https://*.stripe.com https://*.clerk.accounts.dev https://*.clerk.com",
   "font-src 'self' data:",
+  "worker-src 'self' blob:",
   "connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://*.stripe.com https://api.stripe.com",
   "frame-src 'self' https://*.stripe.com https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com",
   "upgrade-insecure-requests",
