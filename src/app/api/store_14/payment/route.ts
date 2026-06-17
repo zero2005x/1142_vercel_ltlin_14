@@ -9,6 +9,20 @@ type StripeSessionResponse = {
   };
 };
 
+const normalizeOrigin = (origin: string) => origin.replace(/\/$/, '');
+
+const getAppOrigin = (req: NextRequest) => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL);
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${normalizeOrigin(process.env.VERCEL_URL)}`;
+  }
+
+  return req.nextUrl.origin;
+};
+
 export const POST = async (req: NextRequest) => {
   const { userId } = await auth();
   if (!userId) {
@@ -27,8 +41,13 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const requestHeaders = new Headers(req.headers);
-  const origin = requestHeaders.get('origin') ?? new URL(req.url).origin;
+  const appOrigin = getAppOrigin(req);
+  const requestOrigin = req.headers.get('origin');
+
+  if (requestOrigin && normalizeOrigin(requestOrigin) !== appOrigin) {
+    return Response.json({ message: 'Invalid request origin' }, { status: 403 });
+  }
+
   const { orderId, cartId } = (await req.json()) as {
     orderId?: string;
     cartId?: string;
@@ -65,8 +84,8 @@ export const POST = async (req: NextRequest) => {
 
   const stripeParams = new URLSearchParams();
   stripeParams.set('mode', 'payment');
-  stripeParams.set('success_url', `${origin}/api/store_14/confirm?session_id={CHECKOUT_SESSION_ID}`);
-  stripeParams.set('cancel_url', `${origin}/store_14/cart_14`);
+  stripeParams.set('success_url', `${appOrigin}/api/store_14/confirm?session_id={CHECKOUT_SESSION_ID}`);
+  stripeParams.set('cancel_url', `${appOrigin}/store_14/cart_14`);
   stripeParams.set('metadata[orderId]', order.id);
   stripeParams.set('metadata[cartId]', cart.id);
   stripeParams.set('metadata[userId]', userId);

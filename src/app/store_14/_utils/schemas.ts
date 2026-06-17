@@ -69,6 +69,20 @@ export const productIdSchema = z.object({
   }),
 });
 
+export const uuidSchema = z.string().uuid({
+  message: 'Invalid id.',
+});
+
+export const cartAmountSchema = z.coerce
+  .number()
+  .int()
+  .min(1, {
+    message: 'Amount must be at least 1.',
+  })
+  .max(20, {
+    message: 'Amount must be 20 or less.',
+  });
+
 export const productImageUpdateSchema = z.object({
   id: z.string().uuid({
     message: 'Invalid product id.',
@@ -127,16 +141,15 @@ export function validateWithZodSchema<T>(schema: ZodSchema<T>, data: unknown): T
 }
 
 export const reviewSchema = z.object({
-  productId: z.string().min(1, {
-    message: 'Product ID cannot be empty',
+  productId: z.string().uuid({
+    message: 'Invalid product id.',
   }),
   rating: z.coerce
     .number()
     .int()
     .min(1, { message: 'Rating must be at least 1' })
     .max(5, { message: 'Rating must be at most 5' }),
-  comment: z
-    .string()
+  comment: safeText('comment')
     .min(10, { message: 'Comment must be at least 10 characters long' })
     .max(1000, { message: 'Comment must be at most 1000 characters long' }),
 });
@@ -147,11 +160,15 @@ export const salesSchema = z.object({
   }),
   products: z.coerce.number().int().min(1, {
     message: 'products must be at least 1.',
+  }).max(1000, {
+    message: 'products must be 1000 or less.',
   }),
   orderTotal: z.coerce.number().int().min(0, {
     message: 'order total must be a positive number.',
+  }).max(maxProductPrice, {
+    message: `order total must be less than ${maxProductPrice}.`,
   }),
-  tax: z.coerce.number().int().min(0).default(0),
-  shipping: z.coerce.number().int().min(0).default(0),
+  tax: z.coerce.number().int().min(0).max(maxProductPrice).default(0),
+  shipping: z.coerce.number().int().min(0).max(maxProductPrice).default(0),
   isPaid: z.coerce.boolean().default(false),
 });

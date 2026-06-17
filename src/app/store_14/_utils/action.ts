@@ -6,11 +6,13 @@ import { products as seedProducts } from '@/store/products';
 import { redirect } from 'next/navigation';
 import { currentUser, auth } from '@clerk/nextjs/server';
 import {
+	cartAmountSchema,
 	imageSchema,
 	productIdSchema,
 	productSchema,
 	reviewSchema,
 	salesSchema,
+	uuidSchema,
 	validateFormFields,
 	validateWithZodSchema,
 } from './schemas';
@@ -169,6 +171,18 @@ const createProductFields = [...productFields, 'image'];
 const updateProductFields = ['id', ...productFields];
 const updateProductImageFields = ['id', 'url', 'image'];
 const deleteProductFields = ['id'];
+const addToCartFields = ['productId', 'amount'];
+const removeCartItemFields = ['id'];
+const favoriteFields = ['productId', 'favoriteId', 'pathname'];
+const reviewFields = ['productId', 'rating', 'comment'];
+const deleteReviewFields = ['reviewId'];
+const salesFields = ['email', 'products', 'orderTotal', 'tax', 'shipping', 'isPaid'];
+
+const getSafeStorePathname = (pathname: string) => {
+	if (!pathname.startsWith('/store_14')) return '/store_14/products_14';
+	if (pathname.startsWith('//')) return '/store_14/products_14';
+	return pathname;
+};
 
 
 
@@ -433,8 +447,13 @@ export const addToCartAction = async (
 ): Promise<{ message: string }> => {
 	const user = await getAuthUser();
 	try {
+		validateFormFields(formData, addToCartFields);
 		const productId = formData.get('productId') as string;
-		const amount = Number(formData.get('amount')) || 1;
+		validateWithZodSchema(productIdSchema, { id: productId });
+		const amount = validateWithZodSchema(
+			cartAmountSchema,
+			formData.get('amount') || 1,
+		);
 		await fetchProduct(productId);
 		const cart = await fetchOrCreateCart({ userId: user.id });
 		await updateOrCreateCartItem({ productId, cartId: cart.id, amount });
@@ -452,7 +471,9 @@ export const removeCartItemAction = async (
 ): Promise<{ message: string }> => {
 	const user = await getAuthUser();
 	try {
+		validateFormFields(formData, removeCartItemFields);
 		const cartItemId = formData.get('id') as string;
+		validateWithZodSchema(uuidSchema, cartItemId);
 		const cart = await fetchOrCreateCart({ userId: user.id, errorOnFailure: true });
 		if (!prisma) throw new Error('Prisma client is not initialized');
 		await prisma.cartItem.deleteMany({
@@ -475,11 +496,13 @@ export const updateCartItemAction = async ({
 }): Promise<{ message: string }> => {
 	const user = await getAuthUser();
 	try {
+		validateWithZodSchema(uuidSchema, cartItemId);
+		const validatedAmount = validateWithZodSchema(cartAmountSchema, amount);
 		const cart = await fetchOrCreateCart({ userId: user.id, errorOnFailure: true });
 		if (!prisma) throw new Error('Prisma client is not initialized');
 		await prisma.cartItem.updateMany({
 			where: { id: cartItemId, cartId: cart.id },
-			data: { amount },
+			data: { amount: validatedAmount },
 		});
 		await updateCart(cart.id);
 		revalidatePath('/store_14/cart_14');
@@ -514,12 +537,20 @@ export const toggleFavoriteAction = async (
 	const user = await getAuthUser();
 	const productId = formData.get('productId') as string;
 	const favoriteId = formData.get('favoriteId') as string;
-	const pathname = (formData.get('pathname') as string) || '/store_14/products_14';
+	const pathname = getSafeStorePathname(
+		(formData.get('pathname') as string) || '/store_14/products_14',
+	);
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, favoriteFields);
+		validateWithZodSchema(productIdSchema, { id: productId });
+		if (favoriteId) validateWithZodSchema(uuidSchema, favoriteId);
 		if (favoriteId) {
-			await prisma.favorite.delete({ where: { id: favoriteId } });
+			await prisma.favorite.deleteMany({
+				where: { id: favoriteId, clerkId: user.id },
+			});
 		} else {
+			await fetchProduct(productId);
 			await prisma.favorite.create({
 				data: { productId, clerkId: user.id },
 			});
@@ -552,8 +583,10 @@ export const createReviewAction = async (
 	const user = await getAuthUserProfile();
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, reviewFields);
 		const rawData = Object.fromEntries(formData);
 		const validatedFields = validateWithZodSchema(reviewSchema, rawData);
+		await fetchProduct(validatedFields.productId);
 		const authorName =
 			user.firstName ??
 			user.username ??
@@ -642,6 +675,8 @@ export const deleteReviewAction = async (
 
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, deleteReviewFields);
+		validateWithZodSchema(uuidSchema, reviewId);
 		const review = await prisma.review.findFirst({
 			where: {
 				id: reviewId,
@@ -677,6 +712,9 @@ export const createOrderAction = async (
 	_prevState: { message: string },
 	_formData: FormData,
 ): Promise<{ message: string }> => {
+	void _prevState;
+	void _formData;
+
 	const user = await getAuthUserProfile();
 	let orderId: string | null = null;
 	let cartId: string | null = null;
@@ -739,6 +777,7 @@ export const createSalesAction = async (
 	const user = await getAdminUser();
 	try {
 		if (!prisma) throw new Error('Prisma client is not initialized');
+		validateFormFields(formData, salesFields);
 		const rawData = Object.fromEntries(formData);
 		const normalizedData = {
 			...rawData,

@@ -8,6 +8,7 @@ type StripeRetrieveSessionResponse = {
   metadata?: {
     orderId?: string;
     cartId?: string;
+    userId?: string;
   };
   error?: {
     message?: string;
@@ -53,14 +54,15 @@ export const GET = async (req: NextRequest) => {
 
   const orderId = session.metadata?.orderId;
   const cartId = session.metadata?.cartId;
+  const userId = session.metadata?.userId;
 
-  if (orderId && cartId && session.payment_status === 'paid') {
-    await prisma.order.update({
-      where: { id: orderId },
+  if (orderId && cartId && userId && session.payment_status === 'paid') {
+    await prisma.order.updateMany({
+      where: { id: orderId, clerkId: userId },
       data: { isPaid: true },
     });
     await prisma.cart.deleteMany({
-      where: { id: cartId },
+      where: { id: cartId, clerkId: userId },
     });
   }
 

@@ -12,6 +12,10 @@ const isPublicRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(["/store_14/admin_14(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  if (req.headers.has("x-middleware-subrequest")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { userId } = await auth();
   const isAdminUser = Boolean(userId) && userId === process.env.ADMIN_USER_ID;
 
