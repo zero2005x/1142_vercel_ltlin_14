@@ -1,4 +1,9 @@
 import { z, ZodSchema } from 'zod';
+import {
+  formatFileSize,
+  IMAGE_MAX_UPLOAD_SIZE,
+  isAcceptedImageType,
+} from './image-validation';
 
 export const productSchema = z.object({
   name: z
@@ -30,15 +35,18 @@ export const imageSchema = z.object({
 });
 
 function validateImageFile() {
-  const maxUploadSize = 1024 * 1024;
-  const acceptedFileTypes = ['image/'];
   return z
     .instanceof(File)
     .refine((file) => file.size > 0, 'Image is required')
-    .refine((file) => file.size <= maxUploadSize, 'File size must be less than 1MB')
     .refine(
-      (file) => acceptedFileTypes.some((type) => file.type.startsWith(type)),
-      'File must be an image'
+      (file) => isAcceptedImageType(file.type),
+      'Please choose a JPEG, PNG, or WebP image.'
+    )
+    .refine(
+      (file) => file.size <= IMAGE_MAX_UPLOAD_SIZE,
+      `Image must be less than ${formatFileSize(
+        IMAGE_MAX_UPLOAD_SIZE
+      )} after compression.`
     );
 }
 
