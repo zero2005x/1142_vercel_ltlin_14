@@ -6,8 +6,35 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function FinalHome_14() {
-  const categories2_14 = await fetchCategory_14();
-  console.log('Fetched categories:', categories2_14);
+  let categories2_14: Awaited<ReturnType<typeof fetchCategory_14>> = [];
+  let dbError: string | null = null;
+
+  if (!prisma) {
+    dbError = 'DATABASE_URL is not set on this environment.';
+  } else {
+    try {
+      categories2_14 = await fetchCategory_14();
+      console.log('Fetched categories:', categories2_14);
+    } catch (error) {
+      dbError =
+        error instanceof Error ? error.message : 'Unknown database error';
+      console.error('fetchCategory_14 failed:', error);
+    }
+  }
+
+  if (dbError) {
+    return (
+      <div className='p-8'>
+        <h2 className='text-xl font-semibold mb-2'>
+          final_14: database connection failed
+        </h2>
+        <pre className='whitespace-pre-wrap text-sm text-red-600'>
+          {dbError}
+        </pre>
+      </div>
+    );
+  }
+
   return (
     <>
       <Wrapper>
