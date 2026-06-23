@@ -5,6 +5,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import LoadingContainer from '../_components/global/LoadingContainer';
 
+type CheckoutResponse = {
+  url?: string;
+  message?: string;
+};
+
+async function getCheckoutErrorMessage(response: Response) {
+  const fallback = `Unable to start checkout (${response.status})`;
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    const data = (await response.json()) as CheckoutResponse;
+    return data.message ?? fallback;
+  }
+
+  const text = await response.text();
+  return text || fallback;
+}
+
 function CheckoutRedirect_14({
   orderId,
   cartId,
@@ -24,14 +42,16 @@ function CheckoutRedirect_14({
           headers: {
             'Content-Type': 'application/json',
           },
+          cache: 'no-store',
+          credentials: 'same-origin',
           body: JSON.stringify({ orderId, cartId }),
         });
 
         if (!response.ok) {
-          throw new Error('Unable to start checkout');
+          throw new Error(await getCheckoutErrorMessage(response));
         }
 
-        const data = (await response.json()) as { url?: string };
+        const data = (await response.json()) as CheckoutResponse;
         if (!data.url) throw new Error('Stripe did not return a checkout URL');
         window.location.assign(data.url);
       } catch (checkoutError) {
