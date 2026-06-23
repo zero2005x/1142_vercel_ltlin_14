@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "postinstall": "prisma generate",
-    "seed:chart-orders": "tsx scripts/seed-chart-orders.ts"
+    "seed:chart-orders": "tsx scripts/seed-chart-orders.ts",
+    "copy:local-to-supabase": "node scripts/copy-local-to-supabase.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
