@@ -12,6 +12,17 @@ const isPublicRoute = createRouteMatcher([
 
 const isAdminRoute = createRouteMatcher(["/store_14/admin_14(.*)"]);
 
+// Store member-only routes. Signed-out users are redirected to the store home
+// (same-origin) rather than via auth.protect(), which would 307 RSC fetches to
+// Clerk's cross-origin Account Portal (*.accounts.dev) and trigger CORS errors.
+const isStoreMemberRoute = createRouteMatcher([
+  "/store_14/cart_14(.*)",
+  "/store_14/checkout_14(.*)",
+  "/store_14/favorites_14(.*)",
+  "/store_14/orders_14(.*)",
+  "/store_14/reviews_14(.*)",
+]);
+
 export default clerkMiddleware(async (auth, req) => {
   if (req.headers.has("x-middleware-subrequest")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -24,7 +35,11 @@ export default clerkMiddleware(async (auth, req) => {
   if (isAdminRoute(req) && !isAdminUser) {
     return NextResponse.redirect(new URL("/store_14", req.url));
   }
-  // ② 非公開路徑 → 強制登入
+  // ② 未登入進商店會員頁 → 同源踢回商店首頁（避免跨網域 CORS）
+  if (isStoreMemberRoute(req) && !userId) {
+    return NextResponse.redirect(new URL("/store_14", req.url));
+  }
+  // ③ 非公開路徑 → 強制登入
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
