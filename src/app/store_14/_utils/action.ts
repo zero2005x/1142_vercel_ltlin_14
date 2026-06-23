@@ -796,3 +796,59 @@ export const createSalesAction = async (
 	revalidatePath('/store_14/admin_14/sales_14');
 	redirect('/store_14/admin_14/sales_14');
 };
+
+// ---------------- DASHBOARD ----------------
+
+export type DashboardStats = {
+	ordersCount: number;
+	totalSales: number;
+	productsSold: number;
+};
+
+export const fetchDashboardStats = async (): Promise<DashboardStats> => {
+	await getAdminUser();
+	if (!prisma) return { ordersCount: 0, totalSales: 0, productsSold: 0 };
+
+	const aggregate = await prisma.order.aggregate({
+		where: { isPaid: true },
+		_count: { id: true },
+		_sum: { orderTotal: true, products: true },
+	});
+
+	return {
+		ordersCount: aggregate._count.id ?? 0,
+		totalSales: aggregate._sum.orderTotal ?? 0,
+		productsSold: aggregate._sum.products ?? 0,
+	};
+};
+
+export type ChartDatum = {
+	date: string;
+	amount: number;
+};
+
+export const fetchChartData = async (): Promise<ChartDatum[]> => {
+	await getAdminUser();
+	if (!prisma) return [];
+
+	const date = new Date();
+	date.setMonth(date.getMonth() - 6);
+	const sixMonthsAgo = date;
+
+	const orders = await prisma.order.groupBy({
+		by: ['createdAt'],
+		where: { isPaid: true, createdAt: { gte: sixMonthsAgo } },
+		_sum: { orderTotal: true },
+		orderBy: { createdAt: 'asc' },
+	});
+
+	const formatter = new Intl.DateTimeFormat('en-US', {
+		month: 'short',
+		day: 'numeric',
+	});
+
+	return orders.map((order) => ({
+		date: formatter.format(order.createdAt),
+		amount: order._sum.orderTotal ?? 0,
+	}));
+};
