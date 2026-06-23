@@ -16,7 +16,7 @@
 - 期中考商品分類系統
 - Quiz 1 部落格（本地 JSON / 資料庫兩版本）
 - Quiz 2 部落格管理後台（Blog CRUD + 管理介面）
-- 期末完整電商 `store_14`：Clerk 登入 / 購物車 / 收藏 / 評論 / 訂單 / Stripe 結帳 / 管理後台
+- 期末完整電商 `store_14`：Clerk 登入 / 購物車 / 收藏 / 評論 / 訂單 / Stripe 結帳 / 管理後台（含銷售儀表板長條圖）
 - 全站深色模式（`next-themes`）
 
 ---
@@ -39,6 +39,7 @@
 | Icons | react-icons + lucide-react + @radix-ui/react-icons |
 | Notifications | react-toastify + sonner |
 | Carousel | embla-carousel-react |
+| Charts | recharts（管理後台銷售長條圖） |
 | Seeding | @faker-js/faker + tsx |
 | Deployment | Vercel |
 
@@ -97,7 +98,7 @@
 | 路由 | 功能說明 |
 |------|----------|
 | `/store_14` | 商店首頁（Hero + Featured Products） |
-| `/store_14/about_14` | 關於頁 |
+| `/store_14/about_14` | 關於頁（品牌介紹 Hero） |
 | `/store_14/products_14` | 商品列表（含搜尋、Grid/List 切換） |
 | `/store_14/products_14/[id]` | 商品詳細頁（加入購物車、收藏、評論） |
 | `/store_14/cart_14` | 購物車 |
@@ -105,7 +106,7 @@
 | `/store_14/favorites_14` | 我的收藏（需登入） |
 | `/store_14/orders_14` | 我的訂單（需登入） |
 | `/store_14/reviews_14` | 我的評論（需登入） |
-| `/store_14/admin_14` | 管理後台首頁（僅 admin） |
+| `/store_14/admin_14` | 管理後台儀表板（僅 admin）：銷售統計卡片（總銷售額 / 已付款訂單數 / 售出商品數）＋ 近 6 個月銷售長條圖（recharts） |
 | `/store_14/admin_14/products_14` | 商品管理：列表 / 編輯 / 刪除 |
 | `/store_14/admin_14/sales_14` | 已付款訂單統計 |
 
@@ -246,6 +247,7 @@ npm run dev
 | `npm run start` | 啟動正式伺服器 |
 | `npm run lint` | ESLint 檢查 |
 | `npm run typecheck` | `tsc --noEmit` 型別檢查 |
+| `npm run seed:chart-orders` | 寫入分布於近 6 個月的已付款訂單，供管理後台銷售圖表展示 |
 
 ### 資料庫 Seeding
 
@@ -253,6 +255,7 @@ npm run dev
 - `/seed_14`：UI 介面寫入期中考 shop + blog 測試資料
 - `GET /api/seed`：以 API 寫入商品 Seed 資料
 - 也可使用 [scripts/](scripts/) 下的腳本（例：`npx tsx scripts/seed-orders.ts` 寫入測試訂單）
+- `npm run seed:chart-orders`：寫入分布於近 6 個月的已付款訂單，讓 `/store_14/admin_14` 銷售長條圖呈現多根柱狀資料
 
 ---
 
@@ -296,7 +299,7 @@ src/
 │   │   ├── favorites_14/
 │   │   ├── orders_14/
 │   │   ├── reviews_14/
-│   │   └── admin_14/        # 管理後台（products_14 / sales_14）
+│   │   └── admin_14/        # 管理後台：儀表板（Chart_14 + 統計卡片）/ products_14 / sales_14
 │   ├── demo/                # 全頁面 demo 複本
 │   └── api/                 # seed / test-db / store_14 (payment, confirm)
 ├── actions/                 # 共用 Server Actions
@@ -312,7 +315,7 @@ prisma/
 └── store/
     ├── products.json
     └── store.sql
-scripts/                     # 一次性腳本（seed-orders 等）
+scripts/                     # 一次性腳本（seed-orders / seed-chart-orders 等）
 public/
 ├── images/midterm/          # 期中考靜態圖
 └── store/                   # 電商商品圖
