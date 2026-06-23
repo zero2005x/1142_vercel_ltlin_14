@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/store_14/about_14",
   "/api/store_14/payment",
   "/api/store_14/confirm",
+  "/api/store_14/webhook",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/store_14/admin_14(.*)"]);
